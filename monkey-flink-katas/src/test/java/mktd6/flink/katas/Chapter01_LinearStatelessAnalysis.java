@@ -120,7 +120,32 @@ public class Chapter01_LinearStatelessAnalysis extends EmbeddedClustersBoilerpla
     @Override
     protected DataStream<Tuple2<String, String>> buildFlinkDataflow(DataStream<Tuple2<String, Gibb>> source) {
 
+        FilterFunction<Tuple2<String, Gibb>> gibbFilterFunction = new FilterFunction<Tuple2<String, Gibb>>() {
+            @Override
+            public boolean filter(Tuple2<String, Gibb> stringGibbTupleFiltered) throws Exception {
+                return (stringGibbTupleFiltered.f1.getText().contains("#mktd6") ||
+                        stringGibbTupleFiltered.f1.getText().contains("#bananacoins"));
+            }
+        };
+
+        MapFunction<Tuple2<String, Gibb>, Tuple2<String, Sentiment>> mapGibbToSentiment = new MapFunction<Tuple2<String, Gibb>, Tuple2<String, Sentiment>>() {
+            public Tuple2<String, Sentiment> map(Tuple2<String, Gibb> stringGibbTuple) throws Exception {
+                Tuple2<Sentiment, String> mySentimentTuple = gibbAnalysis(stringGibbTuple.f1);
+                return new Tuple2<>(stringGibbTuple.f0, mySentimentTuple.f0);
+            }
+        };
+
+        FilterFunction<Tuple2<String, Gibb>> sentimentFilterFunction = new FilterFunction<Tuple2<String, Gibb>>() {
+            @Override
+            public boolean filter(Tuple2<String, Gibb> stringGibbTupleFiltered) throws Exception {
+                return (stringGibbTupleFiltered.f1.getText().contains("#mktd6") ||
+                        stringGibbTupleFiltered.f1.getText().contains("#bananacoins"));
+            }
+        };
+
         // >>> Your job starts here.
+        DataStream<Tuple2<String, Sentiment>> stage2Stream = source.filter(gibbFilterFunction)
+                .map(mapGibbToSentiment);
 
         // ######## Read the javadoc !!! ########
 

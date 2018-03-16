@@ -112,8 +112,13 @@ public class Chapter00_RunMyFirstFlinkAppTest extends EmbeddedClustersBoilerplat
                         maven configuration to make it work, but this is not
                         really the topic of the day.
             ====*/
-
-        return null;
+        return source.map(new MapFunction<Tuple2<String, SharePriceInfo>, Tuple2<String, String>>() {
+            @Override
+            public Tuple2<String, String> map(Tuple2<String, SharePriceInfo> stringSharePriceInfoTuple2) throws Exception {
+                String convertedAction = stringSharePriceInfoTuple2.f1.getForecast().getMult() < 1 ? "SELL"  : "BUY";
+                return new Tuple2<> (stringSharePriceInfoTuple2.f0,convertedAction);
+            }
+        });
     }
 
 
